@@ -1,0 +1,37 @@
+[
+    {
+        "directory": "/home/mvrzz/Documents/Tetris_Prjt/Tetris ",
+        "command": "g++ -Iinclude -c main.cpp -o main.o",
+        "file": "main.cpp"
+    },
+    {
+        "directory": "/home/mvrzz/Documents/Tetris_Prjt/Tetris ",
+        "command": "g++ -Iinclude -c src/Audio.cpp -o src/Audio.o",
+        "file": "src/Audio.cpp"
+    },
+    {
+        "directory": "/home/mvrzz/Documents/Tetris_Prjt/Tetris ",
+        "command": "g++ -Iinclude -c src/Board.cpp -o src/Board.o",
+        "file": "src/Board.cpp"
+    },
+    {
+        "directory": "/home/mvrzz/Documents/Tetris_Prjt/Tetris ",
+        "command": "g++ -Iinclude -c src/Game.cpp -o src/Game.o",
+        "file": "src/Game.cpp"
+    },
+    {
+        "directory": "/home/mvrzz/Documents/Tetris_Prjt/Tetris ",
+        "command": "g++ -Iinclude -c src/Menu.cpp -o src/Menu.o",
+        "file": "src/Menu.cpp"
+    },
+    {
+        "directory": "/home/mvrzz/Documents/Tetris_Prjt/Tetris ",
+        "command": "g++ -Iinclude -c src/Piece.cpp -o src/Piece.o",
+        "file": "src/Piece.cpp"
+    },
+    {
+        "directory": "/home/mvrzz/Documents/Tetris_Prjt/Tetris ",
+        "command": "g++ -Iinclude -c src/UI.cpp -o src/UI.o",
+        "file": "src/UI.cpp"
+    }
+]
