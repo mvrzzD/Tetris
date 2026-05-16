@@ -6,49 +6,15 @@
 // ─────────────────────────────────────────────
 //  Helper — effet 3D sur un bloc
 // ─────────────────────────────────────────────
-static void draw3DBlock(sf::RenderWindow& window,
-                        float x, float y,
-                        sf::Color couleur,
-                        float taille = static_cast<float>(TILE))
+static void drawFlatBlock(sf::RenderWindow& window,
+                         float x, float y,
+                         sf::Color couleur,
+                         float taille = static_cast<float>(TILE))
 {
-    const float bevel = taille * 0.18f;
-
     sf::RectangleShape face(sf::Vector2f(taille - 1.f, taille - 1.f));
     face.setPosition(sf::Vector2f(x, y));
     face.setFillColor(couleur);
     window.draw(face);
-
-    sf::Color clair(
-        std::min(255, couleur.r + 80),
-        std::min(255, couleur.g + 80),
-        std::min(255, couleur.b + 80)
-    );
-
-    sf::RectangleShape bordHaut(sf::Vector2f(taille - 1.f, bevel));
-    bordHaut.setPosition({x, y});
-    bordHaut.setFillColor(clair);
-    window.draw(bordHaut);
-
-    sf::RectangleShape bordGauche(sf::Vector2f(bevel, taille - 1.f));
-    bordGauche.setPosition({x, y});
-    bordGauche.setFillColor(clair);
-    window.draw(bordGauche);
-
-    sf::Color sombre(
-        std::max(0, couleur.r - 80),
-        std::max(0, couleur.g - 80),
-        std::max(0, couleur.b - 80)
-    );
-
-    sf::RectangleShape bordBas(sf::Vector2f(taille - 1.f, bevel));
-    bordBas.setPosition({x, y + taille - 1.f - bevel});
-    bordBas.setFillColor(sombre);
-    window.draw(bordBas);
-
-    sf::RectangleShape bordDroite(sf::Vector2f(bevel, taille - 1.f));
-    bordDroite.setPosition({x + taille - 1.f - bevel, y});
-    bordDroite.setFillColor(sombre);
-    window.draw(bordDroite);
 }
 
 // ─────────────────────────────────────────────
@@ -64,6 +30,8 @@ Game::Game(sf::RenderWindow& window)
       modeEvolutif(false),
       niveauPrecedent(1),
       tempsEcoule(0.f),
+      timerVerrouillage(0.f),
+      enVerrouillage(false),
       rng(std::random_device{}()),
       dist(0, 6)
 {
@@ -86,10 +54,12 @@ Piece Game::genererPiece() {
 // ─────────────────────────────────────────────
 void Game::resetPartie() {
     board.reset();
-    pieceActuelle   = genererPiece();
-    pieceSuivante   = genererPiece();
-    tempsEcoule     = 0.f;
-    niveauPrecedent = 1;
+    pieceActuelle     = genererPiece();
+    pieceSuivante     = genererPiece();
+    tempsEcoule       = 0.f;
+    timerVerrouillage = 0.f;
+    enVerrouillage    = false;
+    niveauPrecedent   = 1;
     clock.restart();
 }
 
@@ -123,7 +93,8 @@ void Game::handleEvents() {
             if (suivant == PLAYING) {
                 audio.jouerMenuValid();
                 resetPartie();
-                audio.jouerMusiqueJeu();
+                if (modeEvolutif) audio.jouerMusiqueTypeB();
+                else audio.jouerMusiqueTypeA();
             }
             etat = suivant;
         }
@@ -134,8 +105,15 @@ void Game::handleEvents() {
                 audio.resumeMusique();
                 clock.restart();
             }
-            if (suivant == MODE_SELECTION)
-            {
+            else if (suivant == RESTART) {
+                audio.jouerMenuValid();
+                resetPartie();
+                if (modeEvolutif) audio.jouerMusiqueTypeB();
+                else audio.jouerMusiqueTypeA();
+                clock.restart();
+                suivant = PLAYING; 
+            }
+            else if (suivant == MODE_SELECTION) {
                 audio.jouerMenuValid();
                 resetPartie();
                 audio.jouerMusiqueMenu();
@@ -157,36 +135,78 @@ void Game::handleEvents() {
                     case sf::Keyboard::Left:
                         pieceActuelle.move(-1, 0);
                         if (!board.isValid(pieceActuelle)) pieceActuelle.move(1, 0);
+                        else {
+                            audio.jouerDeplacement();
+                            if (enVerrouillage) timerVerrouillage = 0.f; // Reset delay
+                        }
                         break;
                     case sf::Keyboard::Right:
                         pieceActuelle.move(1, 0);
                         if (!board.isValid(pieceActuelle)) pieceActuelle.move(-1, 0);
+                        else {
+                            audio.jouerDeplacement();
+                            if (enVerrouillage) timerVerrouillage = 0.f;
+                        }
                         break;
                     case sf::Keyboard::Down:
                         pieceActuelle.move(0, 1);
                         if (!board.isValid(pieceActuelle)) pieceActuelle.move(0, -1);
+                        else {
+                            audio.jouerDeplacement();
+                            tempsEcoule = 0.f; // Reset fall timer
+                        }
                         break;
                     case sf::Keyboard::Up: {
-                        auto sauv = pieceActuelle.getRelativeBlocs();
+                        auto sauvBlocs = pieceActuelle.getRelativeBlocs();
+                        int  sauvX     = pieceActuelle.getPosX();
+                        int  sauvY     = pieceActuelle.getPosY();
+
                         pieceActuelle.rotate();
-                        if (!board.isValid(pieceActuelle))
-                            pieceActuelle.setBlocs(sauv);
+
+                        // Système de "Wall Kick" (décalage si rotation contre un mur)
+                        bool valide = false;
+                        int decalages[] = {0, 1, -1, 2, -2}; // Essayer sur place, puis décalages latéraux
+
+                        for (int dx : decalages) {
+                            pieceActuelle.move(dx, 0);
+                            if (board.isValid(pieceActuelle)) {
+                                valide = true;
+                                break;
+                            }
+                            pieceActuelle.move(-dx, 0); // Revenir si pas valide
+                        }
+
+                        if (!valide) {
+                            pieceActuelle.setBlocs(sauvBlocs);
+                        } else {
+                            audio.jouerRotation();
+                            if (enVerrouillage) timerVerrouillage = 0.f;
+                        }
                         break;
                     }
                     case sf::Keyboard::Space: {
                         while (board.isValid(pieceActuelle)) pieceActuelle.move(0, 1);
                         pieceActuelle.move(0, -1);
                         board.placerPiece(pieceActuelle);
-                        board.supprimerLignes();
+                        audio.jouerPose();
+                        
+                        int nbLignes = board.supprimerLignes();
+                        if (nbLignes == 4) audio.jouerTetris();
+                        else if (nbLignes > 0) audio.jouerLigne();
+                        
                         pieceActuelle = pieceSuivante;
                         pieceSuivante = genererPiece();
-                        if (board.isGameOver(pieceActuelle))
+                        if (board.isGameOver(pieceActuelle)) {
                             etat = GAME_OVER;
+                            audio.jouerGameOver();
+                        }
                         tempsEcoule = 0.f;
+                        enVerrouillage = false;
                         break;
                     }
                     case sf::Keyboard::Escape:
                         etat = PAUSE;
+                        menu.resetSelectionPause();
                         audio.pauseMusique();
                         break;
                     default: break;
@@ -198,15 +218,14 @@ void Game::handleEvents() {
 
 // ─────────────────────────────────────────────
 //  Mise à jour
-//  Correction : UN SEUL clock.restart() par frame
-//  mesuré en secondes puis converti en ms
 // ─────────────────────────────────────────────
 void Game::update() {
-    // On mesure le delta UNE SEULE FOIS, toujours
     float deltaMs = clock.restart().asSeconds() * 1000.f;
 
     if (etat != PLAYING)
-        return;  // on a quand même consommé le clock, pas de double restart
+        return;
+
+    board.updateAnimation(deltaMs);
 
     if (modeEvolutif) {
         int niveauActuel = board.getNiveau();
@@ -222,18 +241,39 @@ void Game::update() {
 
     tempsEcoule += deltaMs;
 
+    // Logique de descente
     if (tempsEcoule >= static_cast<float>(delai)) {
         tempsEcoule = 0.f;
         pieceActuelle.move(0, 1);
 
         if (!board.isValid(pieceActuelle)) {
             pieceActuelle.move(0, -1);
+            enVerrouillage = true;
+        } else {
+            enVerrouillage = false;
+            timerVerrouillage = 0.f;
+        }
+    }
+
+    // Logique de verrouillage (Lock Delay)
+    if (enVerrouillage) {
+        timerVerrouillage += deltaMs;
+        if (timerVerrouillage >= 500.f) { // 500ms de délai
             board.placerPiece(pieceActuelle);
-            board.supprimerLignes();
+            audio.jouerPose();
+            
+            int nbLignes = board.supprimerLignes();
+            if (nbLignes == 4) audio.jouerTetris();
+            else if (nbLignes > 0) audio.jouerLigne();
+            
             pieceActuelle = pieceSuivante;
             pieceSuivante = genererPiece();
-            if (board.isGameOver(pieceActuelle))
+            if (board.isGameOver(pieceActuelle)) {
                 etat = GAME_OVER;
+                audio.jouerGameOver();
+            }
+            enVerrouillage = false;
+            timerVerrouillage = 0.f;
         }
     }
 }
@@ -242,7 +282,7 @@ void Game::update() {
 //  Rendu
 // ─────────────────────────────────────────────
 void Game::render() {
-    window.clear(sf::Color(15, 15, 15)); // ← OBLIGATOIRE
+    window.clear(sf::Color(245, 245, 245)); // Beige
 
     if (etat == WELCOME) {
         menu.drawWelcome(window);
@@ -270,13 +310,14 @@ void Game::render() {
 //  Rendu jeu
 // ─────────────────────────────────────────────
 void Game::renderJeu() {
-    window.clear(sf::Color(15, 15, 15));
+    window.clear(sf::Color(245, 245, 245));
 
     board.draw(window, 0, 0);
+    drawGhostPiece();
 
     for (const Block& b : pieceActuelle.getBlocks()) {
         if (b.y >= 0)
-            draw3DBlock(window,
+            drawFlatBlock(window,
                         b.x * TILE,
                         b.y * TILE,
                         pieceActuelle.getColor());
@@ -284,7 +325,25 @@ void Game::renderJeu() {
 
     ui.draw(window,
             board.getScore(),
+            board.getHighScore(),
             board.getNiveau(),
             modeEvolutif,
             pieceSuivante);
+}
+
+void Game::drawGhostPiece() {
+    Piece ghost = pieceActuelle;
+    while (board.isValid(ghost)) {
+        ghost.move(0, 1);
+    }
+    ghost.move(0, -1);
+
+    sf::Color c = pieceActuelle.getColor();
+    c.a = 60; // Semi-transparent
+
+    for (const Block& b : ghost.getBlocks()) {
+        if (b.y >= 0) {
+            drawFlatBlock(window, b.x * TILE, b.y * TILE, c);
+        }
+    }
 }

@@ -8,13 +8,14 @@ Audio::Audio()
       pitchActuel(1.0f),
       sonActif(true)
 {
-    // Use existing assets as placeholders
-    chargerSon("move",       "assets/soundsEffects/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3");
-    chargerSon("rotate",     "assets/soundsEffects/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3");
-    chargerSon("pose",       "assets/soundsEffects/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3");
-    chargerSon("line",       "assets/soundsEffects/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3");
-    chargerSon("menu_valid", "assets/soundsEffects/driken5482-retro-select-236670.mp3");
-    chargerSon("gameover",   "assets/soundsEffects/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3");
+    // Attribution précise de chaque fichier à sa fonction
+    chargerSon("move",         "assets/audios/click.mp3");
+    chargerSon("rotate",       "assets/audios/rotation.mp3");
+    chargerSon("pose",         "assets/audios/drop.mp3");
+    chargerSon("line",         "assets/audios/line_clear.mp3");
+    chargerSon("tetris",       "assets/audios/tetris_clear.mp3");
+    chargerSon("menu_valid",   "assets/audios/hold.mp3"); // Son de sélection
+    chargerSon("gameover",     "assets/audios/game_over.mp3");
 }
 
 Audio::~Audio() {
@@ -37,7 +38,29 @@ void Audio::chargerSon(const string& nom, const string& fichier) {
 
 void Audio::jouerMusiqueMenu() {
     musique.stop();
-    if (!musique.openFromFile("assets/soundsEffects/bobbeats-8-bit-loop-music-290770.mp3")) return;
+    if (!musique.openFromFile("assets/audios/Main Menu.mp3")) return;
+    musique.setLoop(true);
+    musique.setVolume(50.f);
+    musique.setPitch(1.0f);
+    pitchActuel = 1.0f;
+    musique.play();
+    musiqueActive = true;
+}
+
+void Audio::jouerMusiqueTypeA() {
+    musique.stop();
+    if (!musique.openFromFile("assets/audios/Type A.mp3")) return;
+    musique.setLoop(true);
+    musique.setVolume(50.f);
+    musique.setPitch(1.0f);
+    pitchActuel = 1.0f;
+    musique.play();
+    musiqueActive = true;
+}
+
+void Audio::jouerMusiqueTypeB() {
+    musique.stop();
+    if (!musique.openFromFile("assets/audios/Type B.mp3")) return;
     musique.setLoop(true);
     musique.setVolume(50.f);
     musique.setPitch(1.0f);
@@ -47,14 +70,7 @@ void Audio::jouerMusiqueMenu() {
 }
 
 void Audio::jouerMusiqueJeu() {
-    musique.stop();
-    if (!musique.openFromFile("assets/soundsEffects/bobbeats-8-bit-loop-music-290770.mp3")) return;
-    musique.setLoop(true);
-    musique.setVolume(50.f);
-    musique.setPitch(1.0f);
-    pitchActuel = 1.0f;
-    musique.play();
-    musiqueActive = true;
+    jouerMusiqueTypeA();
 }
 
 void Audio::stopMusique()   { musique.stop();  musiqueActive = false; }
@@ -96,6 +112,12 @@ void Audio::jouerLigne()
   {
       if (sonActif && sons.count("line"))
         sons["line"]->play();
+  }
+
+void Audio::jouerTetris()
+  {
+      if (sonActif && sons.count("tetris"))
+        sons["tetris"]->play();
   }
 
 void Audio::jouerMenuValid()

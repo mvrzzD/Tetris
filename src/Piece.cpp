@@ -10,31 +10,31 @@ void Piece::initForme() {
     switch (type) {
         case 0: // O — Carré
             blocs   = { {0,0},{1,0},{0,1},{1,1} };
-            couleur = sf::Color(255, 213, 0);   // Jaune
+            couleur = sf::Color(32, 156, 115);   // Vert
             break;
         case 1: // I — Bâton
             blocs   = { {-1,0},{0,0},{1,0},{2,0} };
-            couleur = sf::Color(0, 220, 220);   // Cyan
+            couleur = sf::Color(0, 200, 220);   // Cyan
             break;
         case 2: // T
             blocs   = { {0,-1},{-1,0},{0,0},{1,0} };
-            couleur = sf::Color(160, 0, 200);   // Violet
+            couleur = sf::Color(160, 80, 200);  // Violet doux
             break;
         case 3: // L
             blocs   = { {-1,-1},{-1,0},{0,0},{1,0} };
-            couleur = sf::Color(255, 140, 0);   // Orange
+            couleur = sf::Color(240, 150, 40);  // Orange doux
             break;
         case 4: // J
             blocs   = { {1,-1},{-1,0},{0,0},{1,0} };
-            couleur = sf::Color(0, 80, 220);    // Bleu
+            couleur = sf::Color(60, 120, 210);  // Bleu doux
             break;
         case 5: // S
             blocs   = { {0,-1},{1,-1},{-1,0},{0,0} };
-            couleur = sf::Color(0, 200, 60);    // Vert
+            couleur = sf::Color(242, 84, 91);   // Rouge/Rose
             break;
         case 6: // Z
             blocs   = { {-1,-1},{0,-1},{0,0},{1,0} };
-            couleur = sf::Color(220, 30, 30);   // Rouge
+            couleur = sf::Color(216, 84, 131);  // Rose
             break;
         default:
             blocs   = { {0,0},{1,0},{0,1},{1,1} };

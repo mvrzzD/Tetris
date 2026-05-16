@@ -16,57 +16,91 @@ void UI::drawTexte(sf::RenderWindow& window, const std::string& texte,
 }
 
 void UI::draw(sf::RenderWindow& window,
-              int score, int niveau, bool modeEvolutif,
+              int score, int highScore, int niveau, bool modeEvolutif,
               const Piece& pieceSuivante) const {
 
-    float px = static_cast<float>(offsetX + 12);
-
+    float panelWidth = 310.f;
+    float centerX = offsetX + panelWidth / 2.f;
+    
     // ── Fond du panneau ──────────────────────
-    sf::RectangleShape fond(sf::Vector2f(188, static_cast<float>(ROWS * TILE)));
+    sf::RectangleShape fond(sf::Vector2f(panelWidth, static_cast<float>(ROWS * TILE)));
     fond.setPosition(sf::Vector2f(static_cast<float>(offsetX), 0.f));
-    fond.setFillColor(sf::Color(20, 20, 30));
+    fond.setFillColor(sf::Color(245, 245, 245));
     window.draw(fond);
 
+    auto drawCenteredText = [&](const std::string& str, float y, int size, sf::Color color) {
+        sf::Text t(str, font, size);
+        float width = t.getLocalBounds().width;
+        t.setPosition(centerX - width / 2.f, y);
+        t.setFillColor(color);
+        window.draw(t);
+    };
+
+    // ── High Score ───────────────────────────
+    drawCenteredText("BEST SCORE", 30, 20, sf::Color(120, 120, 120));
+    drawCenteredText(std::to_string(highScore), 60, 32, sf::Color(32, 156, 115));
+
+    // ── Separateur ───────────────────────────
+    sf::RectangleShape sep1(sf::Vector2f(200.f, 1.f));
+    sep1.setPosition(centerX - 100.f, 110.f);
+    sep1.setFillColor(sf::Color(220, 220, 220));
+    window.draw(sep1);
+
     // ── Score ────────────────────────────────
-    drawTexte(window, "SCORE", px, 20, 18, sf::Color(160, 160, 160));
-    drawTexte(window, std::to_string(score), px, 45, 28, sf::Color::White);
+    drawCenteredText("CURRENT SCORE", 130, 20, sf::Color(120, 120, 120));
+    drawCenteredText(std::to_string(score), 160, 36, sf::Color::Black);
+
+    float nextSectionY = 230.f;
 
     // ── Niveau (uniquement en mode évolutif) ─
     if (modeEvolutif) {
-        drawTexte(window, "NIVEAU", px, 100, 18, sf::Color(160, 160, 160));
-        drawTexte(window, std::to_string(niveau), px, 125, 28, sf::Color(255, 213, 0));
+        sf::RectangleShape sep2(sf::Vector2f(200.f, 1.f));
+        sep2.setPosition(centerX - 100.f, 220.f);
+        sep2.setFillColor(sf::Color(220, 220, 220));
+        window.draw(sep2);
+
+        drawCenteredText("LEVEL", 240, 20, sf::Color(120, 120, 120));
+        drawCenteredText(std::to_string(niveau), 270, 36, sf::Color::Black);
+        nextSectionY = 340.f;
     }
 
     // ── Pièce suivante ───────────────────────
-    float nextY = modeEvolutif ? 185.f : 110.f;
-    drawTexte(window, "SUIVANT", px, nextY, 18, sf::Color(160, 160, 160));
+    drawCenteredText("NEXT PIECE", nextSectionY, 20, sf::Color(120, 120, 120));
 
     // Cadre de la pièce suivante
-    float cadreX = px;
-    float cadreY = nextY + 28;
-    sf::RectangleShape cadre(sf::Vector2f(6 * TILE, 4 * TILE));
+    float cadreSize = 5.f * TILE;
+    float cadreX = centerX - cadreSize / 2.f;
+    float cadreY = nextSectionY + 35.f;
+    
+    sf::RectangleShape cadre(sf::Vector2f(cadreSize, 4.f * TILE));
     cadre.setPosition(sf::Vector2f(cadreX, cadreY));
-    cadre.setFillColor(sf::Color(30, 30, 40));
-    cadre.setOutlineColor(sf::Color(70, 70, 90));
-    cadre.setOutlineThickness(1);
+    cadre.setFillColor(sf::Color(255, 255, 255));
+    cadre.setOutlineColor(sf::Color(220, 220, 220));
+    cadre.setOutlineThickness(2);
     window.draw(cadre);
 
-    // Dessin des blocs de la pièce suivante (centrés dans le cadre)
+    // Dessin des blocs de la pièce suivante
     sf::RectangleShape cell(sf::Vector2f(TILE - 1.f, TILE - 1.f));
     cell.setFillColor(pieceSuivante.getColor());
     for (const Block& b : pieceSuivante.getRelativeBlocs()) {
-        float bx = cadreX + (b.x + 2) * TILE;
-        float by = cadreY + (b.y + 2) * TILE;
+        float bx = cadreX + (b.x + 2.0f) * TILE;
+        float by = cadreY + (b.y + 1.5f) * TILE;
         cell.setPosition(sf::Vector2f(bx, by));
         window.draw(cell);
     }
 
-    // ── Contrôles (rappel) ───────────────────
-    float ctrlY = static_cast<float>(ROWS * TILE) - 160.f;
-    drawTexte(window, "CONTROLES",     px, ctrlY,        14, sf::Color(100, 100, 100));
-    drawTexte(window, "<>  Deplacer",  px, ctrlY + 22,   13, sf::Color(120, 120, 120));
-    drawTexte(window, "^   Rotation",  px, ctrlY + 40,   13, sf::Color(120, 120, 120));
-    drawTexte(window, "v   Descendre", px, ctrlY + 58,   13, sf::Color(120, 120, 120));
-    drawTexte(window, "Esp Hard drop", px, ctrlY + 76,   13, sf::Color(120, 120, 120));
-    drawTexte(window, "Ech Pause",     px, ctrlY + 94,   13, sf::Color(120, 120, 120));
+    // ── Contrôles ────────────────────────────
+    float ctrlY = static_cast<float>(ROWS * TILE) - 220.f;
+    drawCenteredText("CONTROLS", ctrlY, 18, sf::Color(100, 100, 100));
+    
+    float textX = centerX - 90.f;
+    auto drawControl = [&](const std::string& str, float y) {
+        drawTexte(window, str, textX, y, 15, sf::Color(130, 130, 130));
+    };
+
+    drawControl("<>  Move",     ctrlY + 35);
+    drawControl("^   Rotate",   ctrlY + 55);
+    drawControl("v   Soft Drop",ctrlY + 75);
+    drawControl("Spc Hard Drop",ctrlY + 95);
+    drawControl("Esc Pause",    ctrlY + 115);
 }

@@ -2,7 +2,7 @@
 #include "Game.h"
 
 int main() {
-    const unsigned int width  = COLS * TILE + 300;
+    const unsigned int width  = COLS * TILE + 310;
     const unsigned int height = ROWS * TILE;
 
     sf::RenderWindow window(
