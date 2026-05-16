@@ -1,6 +1,10 @@
 [
   {
-    "label": "Build and Run SFML",
+    "label": "Build and Run SFML (Linux)",
     "command": "g++ -Iinclude main.cpp src/*.cpp -o tetris -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio && ./tetris",
+  },
+  {
+    "label": "Build and Run SFML (Windows)",
+    "command": "g++ -Iinclude main.cpp src/*.cpp -o tetris.exe -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ; if ($?) { .\\tetris.exe }",
   },
 ]
