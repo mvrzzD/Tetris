@@ -25,6 +25,8 @@ private:
 
     sf::Clock clock;
     float     tempsEcoule;
+    float     timerVerrouillage;
+    bool      enVerrouillage;
 
     // Générateur aléatoire moderne (meilleur que rand())
     std::mt19937                    rng;
@@ -37,6 +39,7 @@ private:
     void update();
     void render();
     void renderJeu();
+    void drawGhostPiece();
 
 public:
     Game(sf::RenderWindow& window);

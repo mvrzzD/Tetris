@@ -84,12 +84,14 @@ void Game::handleEvents() {
             window.close();
 
         if (etat == WELCOME) {
-            GameState suivant = menu.handleWelcome(event);
-            if (suivant == MODE_SELECTION) audio.jouerMenuValid();
-            etat = suivant;
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+                etat = MODE_SELECTION;
+                audio.jouerMenuValid();
+                clock.restart();
+            }
         }
         else if (etat == MODE_SELECTION) {
-            GameState suivant = menu.handleModeSelection(event, vitesse, modeEvolutif);
+            GameState suivant = menu.handleModeSelection(event, window, vitesse, modeEvolutif);
             if (suivant == PLAYING) {
                 audio.jouerMenuValid();
                 resetPartie();
@@ -122,7 +124,15 @@ void Game::handleEvents() {
         }
         else if (etat == GAME_OVER) {
             GameState suivant = menu.handleGameOver(event, window);
-            if (suivant == WELCOME) {
+            if (suivant == RESTART) {
+                audio.jouerMenuValid();
+                resetPartie();
+                if (modeEvolutif) audio.jouerMusiqueTypeB();
+                else audio.jouerMusiqueTypeA();
+                clock.restart();
+                suivant = PLAYING;
+            }
+            else if (suivant == MODE_SELECTION) {
                 audio.jouerMenuValid();
                 resetPartie();
                 audio.jouerMusiqueMenu();

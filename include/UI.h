@@ -18,7 +18,7 @@ public:
     UI(int offsetX);
 
     void draw(sf::RenderWindow& window,
-              int score, int niveau, bool modeEvolutif,
+              int score, int highScore, int niveau, bool modeEvolutif,
               const Piece& pieceSuivante) const;
 };
 

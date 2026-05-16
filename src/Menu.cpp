@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include "Board.h"
+#include <SFML/Window/Keyboard.hpp>
 #include <cmath>
 #include <cstdint>
 #include <ctime>
@@ -9,6 +10,7 @@
 // ─────────────────────────────────────────────
 Menu::Menu() : indexSelection(0), indexSelectionPause(0) {
     fontChargee = font.loadFromFile("assets/fonts/PressStart2P-Regular.ttf");
+    fontArialChargee = fontArial.loadFromFile("assets/fonts/arial.ttf");
 
     nomsModes = {
         "Tres lent",
@@ -34,14 +36,21 @@ void Menu::drawTexte(sf::RenderWindow& window,
                      const std::string& texte,
                      float x, float y,
                      int taille,
-                     sf::Color couleur) const {
-    if (!fontChargee) return;
-
-    sf::Text t(texte, font, static_cast<unsigned int>(taille));
-    t.setPosition(sf::Vector2f(x, y));
-    t.setFillColor(couleur);
-
-    window.draw(t);
+                     sf::Color couleur,
+                     bool useArial) const {
+    if (useArial) {
+        if (!fontArialChargee) return;
+        sf::Text t(texte, fontArial, static_cast<unsigned int>(taille));
+        t.setPosition(sf::Vector2f(x, y));
+        t.setFillColor(couleur);
+        window.draw(t);
+    } else {
+        if (!fontChargee) return;
+        sf::Text t(texte, font, static_cast<unsigned int>(taille));
+        t.setPosition(sf::Vector2f(x, y));
+        t.setFillColor(couleur);
+        window.draw(t);
+    }
 }
 
 // ─────────────────────────────────────────────
@@ -49,8 +58,6 @@ void Menu::drawTexte(sf::RenderWindow& window,
 // ─────────────────────────────────────────────
 void Menu::drawTitre(sf::RenderWindow& window, float y) const {
     float larg = static_cast<float>(window.getSize().x);
-
-    drawTexte(window, "TETRIS", larg / 2 - 200.f, y + 2, 100, sf::Color(0,0,0,30));
 
     std::vector<sf::Color> couleurs = {
         sf::Color(32, 156, 115),
@@ -62,12 +69,12 @@ void Menu::drawTitre(sf::RenderWindow& window, float y) const {
     };
 
     std::string titre = "TETRIS";
-    float startX = larg / 2 - 202.f;
+    float startX = larg / 2 - 280.f;
 
     for (int i = 0; i < 6; i++) {
         drawTexte(window,
                   std::string(1, titre[i]),
-                  startX + i * 68.f,
+                  startX + i * 90.f,
                   y,
                   100,
                   couleurs[i]);
@@ -87,9 +94,9 @@ void Menu::drawWelcome(sf::RenderWindow& window) const {
 
     drawTexte(window,
               "Emmanuel & Martinaud",
-              larg/2 - 180.f,
+              larg/2 - 250.f,
               300.f,
-              30,
+              25,
               sf::Color(80, 80, 80));
 
     sf::RectangleShape bloc(sf::Vector2f(TILE - 2.f, TILE - 2.f));
@@ -110,15 +117,7 @@ void Menu::drawWelcome(sf::RenderWindow& window) const {
             window.draw(bloc);
         }
 
-    float t = std::sin(static_cast<float>(std::time(nullptr)));
-    int alpha = 128 + static_cast<int>(127 * t);
-
-    drawTexte(window,
-              "Appuyez sur ENTREE pour commencer",
-              larg/2 - 280.f,
-              haut - 120.f,
-              26,
-              sf::Color(50, 50, 50, (uint8_t)alpha));
+    drawTexte(window, "Appuyez sur ENTREE pour commencer", larg/2 - 330.f, haut - 100.f, 20, sf::Color(80, 80, 80));
 }
 
 // ─────────────────────────────────────────────
@@ -133,9 +132,9 @@ void Menu::drawModeSelection(sf::RenderWindow& window) const {
 
     drawTexte(window,
               "Choisissez votre mode de jeu :",
-              larg/2 - 250.f,
+              larg/2 - 325.f,
               220.f,
-              28,
+              22,
               sf::Color(60, 60, 60));
 
     std::vector<std::string> descriptions = {
@@ -161,7 +160,7 @@ void Menu::drawModeSelection(sf::RenderWindow& window) const {
                           : sf::Color(100, 100, 100);
 
         drawTexte(window,(sel?"> ":"  ")+nomsModes[i], larg/2 - 280.f, y, 32, c);
-        drawTexte(window,"    "+descriptions[i], larg/2 - 280.f, y + 38, 18, sf::Color(120, 120, 120));
+        drawTexte(window,"    "+descriptions[i], larg/2 - 280.f, y + 38, 18, sf::Color(120, 120, 120), true);
     }
 }
 
@@ -211,30 +210,44 @@ void Menu::drawPause(sf::RenderWindow& window) const {
 // ─────────────────────────────────────────────
 //  GAME OVER
 // ─────────────────────────────────────────────
-void Menu::drawGameOver(sf::RenderWindow& window,int score,int niveau,bool modeEvolutif) const {
-    float larg = window.getSize().x;
-    float haut = window.getSize().y;
+void Menu::drawGameOver(sf::RenderWindow& window, int score, int niveau, bool modeEvolutif) const {
+        float larg = static_cast<float>(window.getSize().x);
+        float haut = static_cast<float>(window.getSize().y);
+
 
     sf::RectangleShape overlay(sf::Vector2f(larg,haut));
     overlay.setFillColor(sf::Color(0,0,0,100));
     window.draw(overlay);
 
-    float cadreH = modeEvolutif ? 230.f : 200.f;
-
-    sf::RectangleShape cadre(sf::Vector2f(320,cadreH));
-    cadre.setPosition(sf::Vector2f(larg/2-160,haut/2-cadreH/2));
-    cadre.setFillColor(sf::Color(255,255,255));
+    sf::RectangleShape cadre(sf::Vector2f(400, 320));
+    cadre.setPosition(sf::Vector2f(larg / 2 - 200, haut / 2 - 160));
+    cadre.setFillColor(sf::Color(255, 255, 255));
     cadre.setOutlineColor(sf::Color(200, 200, 200));
     cadre.setOutlineThickness(2);
     window.draw(cadre);
 
-    float baseY = haut/2-cadreH/2;
+    drawTexte(window, "GAME OVER", larg / 2 - 140, haut / 2 - 140, 40, sf::Color(200, 0, 0));
 
-    drawTexte(window,"GAME OVER",larg/2-100,baseY+15,38,sf::Color(216, 84, 131));
-    drawTexte(window,"Score : "+std::to_string(score),larg/2-75,baseY+70,26, sf::Color(60, 60, 60));
+    std::vector<std::string> options = {
+        "RECOMMENCER",
+        "MENU PRINCIPAL",
+        "QUITTER"
+    };
 
-    if(modeEvolutif)
-        drawTexte(window,"Niveau : "+std::to_string(niveau),larg/2-75,baseY+105,24, sf::Color(60, 60, 60));
+    for (int i = 0; i < (int)options.size(); i++) {
+        bool sel = (i == indexSelectionPause);
+        float y = haut / 2 - 50 + i * 50;
+
+        if (sel) {
+            sf::RectangleShape fond(sf::Vector2f(360, 40));
+            fond.setPosition(sf::Vector2f(larg / 2 - 180, y - 5));
+            fond.setFillColor(sf::Color(230, 230, 230));
+            window.draw(fond);
+        }
+
+        sf::Color c = sel ? sf::Color(32, 156, 115) : sf::Color(80, 80, 80);
+        drawTexte(window, (sel ? "> " : "  ") + options[i], larg / 2 - 170, y, 22, c);
+    }
 }
 
 // ─────────────────────────────────────────────
@@ -248,7 +261,7 @@ GameState Menu::handleWelcome(const sf::Event& event) const {
     return WELCOME;
 }
 
-GameState Menu::handleModeSelection(const sf::Event& event,int& v,bool& e) {
+GameState Menu::handleModeSelection(const sf::Event& event, sf::RenderWindow& window, int& v,bool& e) {
     if(event.type == sf::Event::KeyPressed){
         if(event.key.code == sf::Keyboard::Up)
             indexSelection = (indexSelection-1+nomsModes.size())%nomsModes.size();
@@ -262,6 +275,9 @@ GameState Menu::handleModeSelection(const sf::Event& event,int& v,bool& e) {
             else { v=val; e=false; }
             return PLAYING;
         }
+
+        if(event.key.code == sf::Keyboard::E)
+            window.close();
     }
     return MODE_SELECTION;
 }
@@ -287,10 +303,20 @@ GameState Menu::handlePause(const sf::Event& event, sf::RenderWindow& window) {
     return PAUSE;
 }
 
-GameState Menu::handleGameOver(const sf::Event& event,sf::RenderWindow& w) const {
-    if(event.type == sf::Event::KeyPressed){
-        if(event.key.code == sf::Keyboard::R) return WELCOME;
-        if(event.key.code == sf::Keyboard::Q) w.close();
+GameState Menu::handleGameOver(const sf::Event& event, sf::RenderWindow& window) {
+    if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::Up)
+            indexSelectionPause = (indexSelectionPause - 1 + 3) % 3;
+
+        if (event.key.code == sf::Keyboard::Down)
+            indexSelectionPause = (indexSelectionPause + 1) % 3;
+
+        if (event.key.code == sf::Keyboard::Enter) {
+            if (indexSelectionPause == 0) return RESTART;
+            if (indexSelectionPause == 1) return MODE_SELECTION;
+            if (indexSelectionPause == 2) window.close();
+        }
+
     }
     return GAME_OVER;
 }

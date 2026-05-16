@@ -20,7 +20,9 @@ public:
     ~Audio();
 
     void jouerMusiqueMenu();
-    void jouerMusiqueJeu();
+    void jouerMusiqueTypeA();
+    void jouerMusiqueTypeB();
+    void jouerMusiqueJeu(); // Gardée pour compatibilité si besoin
     void stopMusique();
     void pauseMusique();
     void resumeMusique();
@@ -31,6 +33,7 @@ public:
     void jouerRotation();
     void jouerPose();
     void jouerLigne();
+    void jouerTetris();
     void jouerMenuValid();
     void jouerGameOver();
 
