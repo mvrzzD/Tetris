@@ -39,7 +39,7 @@ void Audio::chargerSon(const string& nom, const string& fichier) {
 void Audio::jouerMusiqueMenu() {
     musique.stop();
     if (!musique.openFromFile("assets/audios/Main Menu.mp3")) return;
-    musique.setLoop(true);
+    musique.setLooping(true);
     musique.setVolume(50.f);
     musique.setPitch(1.0f);
     pitchActuel = 1.0f;
@@ -50,7 +50,7 @@ void Audio::jouerMusiqueMenu() {
 void Audio::jouerMusiqueTypeA() {
     musique.stop();
     if (!musique.openFromFile("assets/audios/Type A.mp3")) return;
-    musique.setLoop(true);
+    musique.setLooping(true);
     musique.setVolume(50.f);
     musique.setPitch(1.0f);
     pitchActuel = 1.0f;
@@ -61,7 +61,7 @@ void Audio::jouerMusiqueTypeA() {
 void Audio::jouerMusiqueTypeB() {
     musique.stop();
     if (!musique.openFromFile("assets/audios/Type B.mp3")) return;
-    musique.setLoop(true);
+    musique.setLooping(true);
     musique.setVolume(50.f);
     musique.setPitch(1.0f);
     pitchActuel = 1.0f;

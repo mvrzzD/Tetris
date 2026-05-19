@@ -3,13 +3,15 @@
 #include <string>
 
 UI::UI(int offsetX) : offsetX(offsetX) {
-    fontChargee = font.loadFromFile("assets/fonts/arial.ttf");
+    // SFML 3 : openFromFile
+    fontChargee = font.openFromFile("assets/fonts/arial.ttf");
 }
 
 void UI::drawTexte(sf::RenderWindow& window, const std::string& texte,
                    float x, float y, int taille, sf::Color couleur) const {
     if (!fontChargee) return;
-    sf::Text t(texte, font, static_cast<unsigned int>(taille));
+    // SFML 3 : sf::Text(font, string, size)
+    sf::Text t(font, texte, static_cast<unsigned int>(taille));
     t.setPosition(sf::Vector2f(x, y));
     t.setFillColor(couleur);
     window.draw(t);
@@ -21,7 +23,7 @@ void UI::draw(sf::RenderWindow& window,
 
     float panelWidth = 310.f;
     float centerX = offsetX + panelWidth / 2.f;
-    
+
     // ── Fond du panneau ──────────────────────
     sf::RectangleShape fond(sf::Vector2f(panelWidth, static_cast<float>(ROWS * TILE)));
     fond.setPosition(sf::Vector2f(static_cast<float>(offsetX), 0.f));
@@ -29,9 +31,11 @@ void UI::draw(sf::RenderWindow& window,
     window.draw(fond);
 
     auto drawCenteredText = [&](const std::string& str, float y, int size, sf::Color color) {
-        sf::Text t(str, font, size);
-        float width = t.getLocalBounds().width;
-        t.setPosition(centerX - width / 2.f, y);
+        // SFML 3 : sf::Text(font, string, size)
+        sf::Text t(font, str, static_cast<unsigned int>(size));
+        // SFML 3 : getLocalBounds().size.x au lieu de .width
+        float width = t.getLocalBounds().size.x;
+        t.setPosition(sf::Vector2f(centerX - width / 2.f, y));
         t.setFillColor(color);
         window.draw(t);
     };
@@ -42,7 +46,7 @@ void UI::draw(sf::RenderWindow& window,
 
     // ── Separateur ───────────────────────────
     sf::RectangleShape sep1(sf::Vector2f(200.f, 1.f));
-    sep1.setPosition(centerX - 100.f, 110.f);
+    sep1.setPosition(sf::Vector2f(centerX - 100.f, 110.f));
     sep1.setFillColor(sf::Color(220, 220, 220));
     window.draw(sep1);
 
@@ -55,7 +59,7 @@ void UI::draw(sf::RenderWindow& window,
     // ── Niveau (uniquement en mode évolutif) ─
     if (modeEvolutif) {
         sf::RectangleShape sep2(sf::Vector2f(200.f, 1.f));
-        sep2.setPosition(centerX - 100.f, 220.f);
+        sep2.setPosition(sf::Vector2f(centerX - 100.f, 220.f));
         sep2.setFillColor(sf::Color(220, 220, 220));
         window.draw(sep2);
 
@@ -67,11 +71,10 @@ void UI::draw(sf::RenderWindow& window,
     // ── Pièce suivante ───────────────────────
     drawCenteredText("NEXT PIECE", nextSectionY, 20, sf::Color(120, 120, 120));
 
-    // Cadre de la pièce suivante
     float cadreSize = 5.f * TILE;
     float cadreX = centerX - cadreSize / 2.f;
     float cadreY = nextSectionY + 35.f;
-    
+
     sf::RectangleShape cadre(sf::Vector2f(cadreSize, 4.f * TILE));
     cadre.setPosition(sf::Vector2f(cadreX, cadreY));
     cadre.setFillColor(sf::Color(255, 255, 255));
@@ -79,7 +82,6 @@ void UI::draw(sf::RenderWindow& window,
     cadre.setOutlineThickness(2);
     window.draw(cadre);
 
-    // Dessin des blocs de la pièce suivante
     sf::RectangleShape cell(sf::Vector2f(TILE - 1.f, TILE - 1.f));
     cell.setFillColor(pieceSuivante.getColor());
     for (const Block& b : pieceSuivante.getRelativeBlocs()) {
@@ -92,15 +94,15 @@ void UI::draw(sf::RenderWindow& window,
     // ── Contrôles ────────────────────────────
     float ctrlY = static_cast<float>(ROWS * TILE) - 220.f;
     drawCenteredText("CONTROLS", ctrlY, 18, sf::Color(100, 100, 100));
-    
+
     float textX = centerX - 90.f;
     auto drawControl = [&](const std::string& str, float y) {
         drawTexte(window, str, textX, y, 15, sf::Color(130, 130, 130));
     };
 
-    drawControl("<>  Move",     ctrlY + 35);
-    drawControl("^   Rotate",   ctrlY + 55);
-    drawControl("v   Soft Drop",ctrlY + 75);
-    drawControl("Spc Hard Drop",ctrlY + 95);
-    drawControl("Esc Pause",    ctrlY + 115);
+    drawControl("<>  Move",      ctrlY + 35);
+    drawControl("^   Rotate",    ctrlY + 55);
+    drawControl("v   Soft Drop", ctrlY + 75);
+    drawControl("Spc Hard Drop", ctrlY + 95);
+    drawControl("Esc Pause",     ctrlY + 115);
 }

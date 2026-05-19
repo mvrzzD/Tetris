@@ -33,14 +33,14 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
-			<Add directory="../../../../../Downloads/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/include" />
+			<Add directory="SFML/include" />
 		</Compiler>
 		<Linker>
 			<Add library="sfml-graphics" />
 			<Add library="sfml-window" />
 			<Add library="sfml-system" />
 			<Add library="sfml-audio" />
-			<Add directory="../../../../../Downloads/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib" />
+			<Add directory="SFML/lib" />
 		</Linker>
 		<Unit filename="include/Audio.h" />
 		<Unit filename="include/Board.h" />

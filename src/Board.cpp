@@ -15,9 +15,9 @@ static void drawFlatBlock(sf::RenderWindow& window,
     window.draw(face);
 }
 
-Board::Board() : highScore(0), timerAnimation(0.f) { 
+Board::Board() : highScore(0), timerAnimation(0.f) {
     chargerHighScore();
-    reset(); 
+    reset();
 }
 
 void Board::chargerHighScore() {
@@ -77,7 +77,7 @@ int Board::supprimerLignes() {
         bool complete = true;
         for (int c = 0; c < COLS; c++)
             if (estVide(r, c)) { complete = false; break; }
-        
+
         if (complete) {
             compteur++;
             aSupprimer.push_back(r);
@@ -94,7 +94,7 @@ int Board::supprimerLignes() {
                     grille[row][c] = grille[row - 1][c];
             for (int c = 0; c < COLS; c++)
                 grille[0][c] = sf::Color::Transparent;
-            
+
             // On ajuste les indices car tout a bougé
             for (int& otherR : aSupprimer) if (otherR < r) otherR++;
         }
@@ -102,7 +102,7 @@ int Board::supprimerLignes() {
         static const int points[] = { 0, 100, 300, 500, 800 };
         if (compteur >= 1 && compteur <= 4)
             score += points[compteur] * niveau;
-        
+
         lignesDetruites += compteur;
         niveau = (lignesDetruites / 10) + 1;
         sauvegarderHighScore();
@@ -137,7 +137,7 @@ void Board::draw(sf::RenderWindow& window, int offsetX, int offsetY) const {
         for (int c = 0; c < COLS; c++) {
             float px = static_cast<float>(offsetX + c * TILE);
             float py = static_cast<float>(offsetY + r * TILE);
-            
+
             if (estVide(r, c)) {
                 cell.setPosition(sf::Vector2f(px, py));
                 cell.setFillColor(sf::Color(235, 235, 235)); // Grille légère
@@ -153,7 +153,7 @@ void Board::draw(sf::RenderWindow& window, int offsetX, int offsetY) const {
         sf::RectangleShape flash(sf::Vector2f(COLS * TILE, TILE));
         flash.setFillColor(sf::Color(255, 255, 255, 180));
         for (int r : lignesAAnimer) {
-            flash.setPosition(offsetX, offsetY + r * TILE);
+            flash.setPosition(sf::Vector2f(static_cast<float>(offsetX), static_cast<float>(offsetY + r * TILE)));
             window.draw(flash);
         }
     }
