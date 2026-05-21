@@ -443,46 +443,57 @@ int delai = std::max(100, TRES_LENT - (niveau - 1) * 60);
 
 ## 📁 Structure des fichiers
 
-```
+```text
 Tetris/
-├── main.cpp                    # Point d'entrée
-│
-├── include/                    # Fichiers d'en-tête (.h)
-│   ├── Game.h                  # Classe Game (boucle principale)
-│   ├── Board.h                 # Classe Board (grille + constantes ROWS/COLS/TILE)
-│   ├── Piece.h                 # Classe Piece + struct Block
-│   ├── Menu.h                  # Classe Menu + enums GameState/GameSpeed
-│   ├── UI.h                    # Classe UI (panneau latéral)
-│   └── Audio.h                 # Classe Audio (sons et musiques)
-│
-├── src/                        # Implémentations (.cpp)
-│   ├── Game.cpp
-│   ├── Board.cpp
-│   ├── Piece.cpp
-│   ├── Menu.cpp
-│   ├── UI.cpp
-│   └── Audio.cpp
-│
-├── assets/
-│   ├── audios/                 # Fichiers audio
+├── .zed/                                 # Fichiers de configuration pour l'éditeur Zed
+├── assets/                               # Ressources multimédias du jeu
+│   ├── audios/                           # Effets sonores et musiques (.mp3)
 │   │   ├── Main Menu.mp3
 │   │   ├── Type A.mp3
 │   │   ├── Type B.mp3
 │   │   ├── click.mp3
-│   │   ├── rotation.mp3
 │   │   ├── drop.mp3
-│   │   ├── line_clear.mp3
-│   │   ├── tetris_clear.mp3
+│   │   ├── game_over.mp3
 │   │   ├── hold.mp3
-│   │   └── game_over.mp3
-│   └── fonts/                  # Polices de caractères
-│       ├── arial.ttf            # Police principale (UI, menus)
-│       ├── arialbd.ttf          # Arial Bold
-│       └── PressStart2P-Regular.ttf  # Police rétro pour le titre
-│
-├── highscore.txt               # Sauvegarde du meilleur score
-├── Tetris3.cbp                 # Fichier projet Code::Blocks
-└── README.md                   # Ce fichier
+│   │   ├── line_clear.mp3
+│   │   ├── no_hold.mp3
+│   │   ├── rotation.mp3
+│   │   └── tetris_clear.mp3
+│   └── fonts/                            # Polices d'écriture (.ttf)
+│       ├── PressStart2P-Regular.ttf
+│       ├── PressStart2P-Regular(1).ttf
+│       ├── arial.ttf
+│       ├── arialbd.ttf
+│       ├── arialbi.ttf
+│       ├── ariali.ttf
+│       ├── ariblk.ttf
+│       └── ARIALN*.TTF (Polices Arial Narrow...)
+├── bin/                                  # Fichiers binaires de sortie après compilation
+├── include/                              # Fichiers d'en-tête C++ (.h)
+│   ├── Audio.h
+│   ├── Board.h
+│   ├── Game.h
+│   ├── Menu.h
+│   ├── Piece.h
+│   └── UI.h
+├── obj/                                  # Fichiers objets intermédiaires de compilation (.o)
+├── SFML/                                 # Bibliothèque SFML (fichiers binaires/headers inclus)
+├── src/                                  # Fichiers sources C++ (.cpp)
+│   ├── Audio.cpp
+│   ├── Board.cpp
+│   ├── Game.cpp
+│   ├── Menu.cpp
+│   ├── Piece.cpp
+│   └── UI.cpp
+├── main.cpp                              # Fichier d'entrée principal (int main)
+├── README.md                             # Ce fichier de documentation
+├── README_MODIFICATIONS.md               # Rapport des améliorations de modernisation
+├── Tetris3.cbp                           # Fichier de projet Code::Blocks
+├── Tetris3.depend                        # Dépendances du projet Code::Blocks
+├── Tetris3.layout                        # Configuration d'affichage Code::Blocks
+├── highscore.txt                         # Sauvegarde du meilleur score
+├── tetris                                # Exécutable compilé
+└── tetris_game                           # Exécutable compilé alternatif
 ```
 
 ---
