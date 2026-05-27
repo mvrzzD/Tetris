@@ -1,0 +1,7 @@
+{
+    "code-runner.runInTerminal": true,
+    "code-runner.saveFileBeforeRun": true,
+    "code-runner.executorMap": {
+        "cpp": "g++ -std=c++17 -Iinclude main.cpp src/*.cpp -o program -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio && ./program"
+    }
+}

@@ -3,15 +3,13 @@
 #include <string>
 
 UI::UI(int offsetX) : offsetX(offsetX) {
-    // SFML 3 : openFromFile
-    fontChargee = font.openFromFile("assets/fonts/arial.ttf");
+    fontChargee = font.loadFromFile("assets/fonts/arial.ttf");
 }
 
 void UI::drawTexte(sf::RenderWindow& window, const std::string& texte,
                    float x, float y, int taille, sf::Color couleur) const {
     if (!fontChargee) return;
-    // SFML 3 : sf::Text(font, string, size)
-    sf::Text t(font, texte, static_cast<unsigned int>(taille));
+    sf::Text t(texte, font, static_cast<unsigned int>(taille));
     t.setPosition(sf::Vector2f(x, y));
     t.setFillColor(couleur);
     window.draw(t);
@@ -31,10 +29,8 @@ void UI::draw(sf::RenderWindow& window,
     window.draw(fond);
 
     auto drawCenteredText = [&](const std::string& str, float y, int size, sf::Color color) {
-        // SFML 3 : sf::Text(font, string, size)
-        sf::Text t(font, str, static_cast<unsigned int>(size));
-        // SFML 3 : getLocalBounds().size.x au lieu de .width
-        float width = t.getLocalBounds().size.x;
+        sf::Text t(str, font, static_cast<unsigned int>(size));
+        float width = t.getLocalBounds().width;
         t.setPosition(sf::Vector2f(centerX - width / 2.f, y));
         t.setFillColor(color);
         window.draw(t);

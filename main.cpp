@@ -6,7 +6,7 @@ int main() {
     const unsigned int height = ROWS * TILE;
 
     sf::RenderWindow window(
-        sf::VideoMode(sf::Vector2u (width, height)),
+        sf::VideoMode(width, height),
         "TETRIS",
         sf::Style::Default
     );

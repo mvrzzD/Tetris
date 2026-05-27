@@ -59,20 +59,17 @@ void Game::run() {
 }
 
 void Game::handleEvents() {
-    // SFML 3 : pollEvent() retourne un optional
-    while (auto optEvent = window.pollEvent()) {
-        auto& event = *optEvent;
-
-        if (event.is<sf::Event::Closed>())
+    sf::Event event;
+    while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed)
             window.close();
 
         if (etat == WELCOME) {
-            if (auto* key = event.getIf<sf::Event::KeyPressed>())
-                if (key->code == sf::Keyboard::Key::Enter) {
-                    etat = MODE_SELECTION;
-                    audio.jouerMenuValid();
-                    clock.restart();
-                }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+                etat = MODE_SELECTION;
+                audio.jouerMenuValid();
+                clock.restart();
+            }
         }
         else if (etat == MODE_SELECTION) {
             GameState suivant = menu.handleModeSelection(event, window, vitesse, modeEvolutif);
@@ -124,9 +121,9 @@ void Game::handleEvents() {
             etat = suivant;
         }
         else if (etat == PLAYING) {
-            if (auto* key = event.getIf<sf::Event::KeyPressed>()) {
-                switch (key->code) {
-                    case sf::Keyboard::Key::Left:
+            if (event.type == sf::Event::KeyPressed) {
+                switch (event.key.code) {
+                    case sf::Keyboard::Left:
                         pieceActuelle.move(-1, 0);
                         if (!board.isValid(pieceActuelle)) pieceActuelle.move(1, 0);
                         else {
@@ -134,7 +131,7 @@ void Game::handleEvents() {
                             if (enVerrouillage) timerVerrouillage = 0.f;
                         }
                         break;
-                    case sf::Keyboard::Key::Right:
+                    case sf::Keyboard::Right:
                         pieceActuelle.move(1, 0);
                         if (!board.isValid(pieceActuelle)) pieceActuelle.move(-1, 0);
                         else {
@@ -142,7 +139,7 @@ void Game::handleEvents() {
                             if (enVerrouillage) timerVerrouillage = 0.f;
                         }
                         break;
-                    case sf::Keyboard::Key::Down:
+                    case sf::Keyboard::Down:
                         pieceActuelle.move(0, 1);
                         if (!board.isValid(pieceActuelle)) pieceActuelle.move(0, -1);
                         else {
@@ -150,7 +147,7 @@ void Game::handleEvents() {
                             tempsEcoule = 0.f;
                         }
                         break;
-                    case sf::Keyboard::Key::Up: {
+                    case sf::Keyboard::Up: {
                         auto sauvBlocs = pieceActuelle.getRelativeBlocs();
                         pieceActuelle.rotate();
 
@@ -171,7 +168,7 @@ void Game::handleEvents() {
                         }
                         break;
                     }
-                    case sf::Keyboard::Key::Space: {
+                    case sf::Keyboard::Space: {
                         while (board.isValid(pieceActuelle)) pieceActuelle.move(0, 1);
                         pieceActuelle.move(0, -1);
                         board.placerPiece(pieceActuelle);
@@ -189,7 +186,7 @@ void Game::handleEvents() {
                         enVerrouillage = false;
                         break;
                     }
-                    case sf::Keyboard::Key::Escape:
+                    case sf::Keyboard::Escape:
                         etat = PAUSE;
                         menu.resetSelectionPause();
                         audio.pauseMusique();

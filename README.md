@@ -1,6 +1,6 @@
 # 🎮 Tetris — C++ / SFML
 
-> Un clone complet du célèbre jeu Tetris développé en **C++ moderne** avec la bibliothèque graphique **SFML 2**, proposant plusieurs modes de jeu, des effets sonores, de la musique et une interface soignée.
+> Un clone complet du célèbre jeu Tetris développé en **C++ moderne** avec la bibliothèque graphique **SFML 2.6.2**, proposant plusieurs modes de jeu, des effets sonores, de la musique et une interface soignée.
 
 ---
 
@@ -67,7 +67,7 @@ Ce projet est une réimplémentation fidèle du Tetris original, enrichie de fon
 - **C++17** — Utilisation de fonctionnalités modernes (`std::mt19937`, structured bindings, lambdas)
 
 ### Bibliothèque principale
-- **SFML 2.x** *(Simple and Fast Multimedia Library)* — Utilisée pour :
+- **SFML 2.6.2** *(Simple and Fast Multimedia Library)* — Utilisée pour :
   - `sfml-graphics` → Rendu 2D (fenêtre, formes, texte)
   - `sfml-window` → Gestion de la fenêtre et des événements clavier
   - `sfml-system` → Horloge (`sf::Clock`), types vectoriels
@@ -503,7 +503,7 @@ Tetris/
 ### Prérequis
 
 - **g++** avec support C++17 (`-std=c++17`)
-- **SFML 2.x** installée sur le système
+- **SFML 2.6.2** installée sur le système
 
 ```bash
 # Ubuntu / Debian

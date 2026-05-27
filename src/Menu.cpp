@@ -6,9 +6,8 @@
 #include <ctime>
 
 Menu::Menu() : indexSelection(0), indexSelectionPause(0) {
-    // SFML 3 : openFromFile au lieu de loadFromFile
-    fontChargee      = font.openFromFile("assets/fonts/PressStart2P-Regular.ttf");
-    fontArialChargee = fontArial.openFromFile("assets/fonts/arial.ttf");
+    fontChargee      = font.loadFromFile("assets/fonts/PressStart2P-Regular.ttf");
+    fontArialChargee = fontArial.loadFromFile("assets/fonts/arial.ttf");
 
     nomsModes = { "Tres lent", "Rapide", "Tres rapide", "Instantane", "Evolutif" };
     vitessesModes = { TRES_LENT, RAPIDE, TRES_RAPIDE, INSTANTANE, EVOLUTIF };
@@ -22,14 +21,13 @@ void Menu::drawTexte(sf::RenderWindow& window,
                      bool useArial) const {
     if (useArial) {
         if (!fontArialChargee) return;
-        // SFML 3 : sf::Text(font, string, size)
-        sf::Text t(fontArial, texte, static_cast<unsigned int>(taille));
+        sf::Text t(texte, fontArial, static_cast<unsigned int>(taille));
         t.setPosition(sf::Vector2f(x, y));
         t.setFillColor(couleur);
         window.draw(t);
     } else {
         if (!fontChargee) return;
-        sf::Text t(font, texte, static_cast<unsigned int>(taille));
+        sf::Text t(texte, font, static_cast<unsigned int>(taille));
         t.setPosition(sf::Vector2f(x, y));
         t.setFillColor(couleur);
         window.draw(t);
@@ -174,58 +172,57 @@ void Menu::drawGameOver(sf::RenderWindow& window, int score, int niveau, bool mo
     }
 }
 
-// ── HANDLERS — SFML 3 ────────────────────────
+// ── HANDLERS — SFML 2.6.2 ───────────────────────
 GameState Menu::handleWelcome(const sf::Event& event) const {
-    if (auto* key = event.getIf<sf::Event::KeyPressed>())
-        if (key->code == sf::Keyboard::Key::Enter)
-            return MODE_SELECTION;
+    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
+        return MODE_SELECTION;
     return WELCOME;
 }
 
 GameState Menu::handleModeSelection(const sf::Event& event, sf::RenderWindow& window,
                                     int& v, bool& e) {
-    if (auto* key = event.getIf<sf::Event::KeyPressed>()) {
-        if (key->code == sf::Keyboard::Key::Up)
+    if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::Up)
             indexSelection = (indexSelection - 1 + nomsModes.size()) % nomsModes.size();
-        if (key->code == sf::Keyboard::Key::Down)
+        if (event.key.code == sf::Keyboard::Down)
             indexSelection = (indexSelection + 1) % nomsModes.size();
-        if (key->code == sf::Keyboard::Key::Enter) {
+        if (event.key.code == sf::Keyboard::Enter) {
             int val = vitessesModes[indexSelection];
             if (val == EVOLUTIF) { v = TRES_LENT; e = true; }
             else                 { v = val;        e = false; }
             return PLAYING;
         }
-        if (key->code == sf::Keyboard::Key::E)
+        if (event.key.code == sf::Keyboard::E)
             window.close();
     }
     return MODE_SELECTION;
 }
 
 GameState Menu::handlePause(const sf::Event& event, sf::RenderWindow& window) {
-    if (auto* key = event.getIf<sf::Event::KeyPressed>()) {
-        if (key->code == sf::Keyboard::Key::Up)
+    if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::Up)
             indexSelectionPause = (indexSelectionPause - 1 + 4) % 4;
-        if (key->code == sf::Keyboard::Key::Down)
+        if (event.key.code == sf::Keyboard::Down)
             indexSelectionPause = (indexSelectionPause + 1) % 4;
-        if (key->code == sf::Keyboard::Key::Enter) {
+        if (event.key.code == sf::Keyboard::Enter) {
             if (indexSelectionPause == 0) return PLAYING;
             if (indexSelectionPause == 1) return RESTART;
             if (indexSelectionPause == 2) return MODE_SELECTION;
             if (indexSelectionPause == 3) window.close();
         }
-        if (key->code == sf::Keyboard::Key::Escape)
+        if (event.key.code == sf::Keyboard::Escape)
             return PLAYING;
     }
     return PAUSE;
 }
 
 GameState Menu::handleGameOver(const sf::Event& event, sf::RenderWindow& window) {
-    if (auto* key = event.getIf<sf::Event::KeyPressed>()) {
-        if (key->code == sf::Keyboard::Key::Up)
+    if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::Up)
             indexSelectionPause = (indexSelectionPause - 1 + 3) % 3;
-        if (key->code == sf::Keyboard::Key::Down)
+        if (event.key.code == sf::Keyboard::Down)
             indexSelectionPause = (indexSelectionPause + 1) % 3;
-        if (key->code == sf::Keyboard::Key::Enter) {
+        if (event.key.code == sf::Keyboard::Enter) {
             if (indexSelectionPause == 0) return RESTART;
             if (indexSelectionPause == 1) return MODE_SELECTION;
             if (indexSelectionPause == 2) window.close();
