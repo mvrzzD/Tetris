@@ -1,9 +1,10 @@
 #include "UI.h"
+#include "AssetManager.h"
 #include "Board.h"
 #include <string>
 
 UI::UI(int offsetX) : offsetX(offsetX) {
-    fontChargee = font.loadFromFile("assets/fonts/arial.ttf");
+    fontChargee = AssetManager::loadFont(font, "assets/fonts/arial.ttf");
 }
 
 void UI::drawTexte(sf::RenderWindow& window, const std::string& texte,
@@ -50,7 +51,7 @@ void UI::draw(sf::RenderWindow& window,
     drawCenteredText("CURRENT SCORE", 130, 20, sf::Color(120, 120, 120));
     drawCenteredText(std::to_string(score), 160, 36, sf::Color::Black);
 
-    float nextSectionY = 230.f;
+    float nextSectionY = 260.f;
 
     // ── Niveau (uniquement en mode évolutif) ─
     if (modeEvolutif) {
@@ -61,14 +62,17 @@ void UI::draw(sf::RenderWindow& window,
 
         drawCenteredText("LEVEL", 240, 20, sf::Color(120, 120, 120));
         drawCenteredText(std::to_string(niveau), 270, 36, sf::Color::Black);
-        nextSectionY = 340.f;
+        nextSectionY = 360.f;
     }
+
+    float cadreSize = 5.f * TILE;
+    float cadreX = centerX - cadreSize / 2.f;
+
+    sf::RectangleShape cell(sf::Vector2f(TILE - 1.f, TILE - 1.f));
 
     // ── Pièce suivante ───────────────────────
     drawCenteredText("NEXT PIECE", nextSectionY, 20, sf::Color(120, 120, 120));
 
-    float cadreSize = 5.f * TILE;
-    float cadreX = centerX - cadreSize / 2.f;
     float cadreY = nextSectionY + 35.f;
 
     sf::RectangleShape cadre(sf::Vector2f(cadreSize, 4.f * TILE));
@@ -78,7 +82,6 @@ void UI::draw(sf::RenderWindow& window,
     cadre.setOutlineThickness(2);
     window.draw(cadre);
 
-    sf::RectangleShape cell(sf::Vector2f(TILE - 1.f, TILE - 1.f));
     cell.setFillColor(pieceSuivante.getColor());
     for (const Block& b : pieceSuivante.getRelativeBlocs()) {
         float bx = cadreX + (b.x + 2.0f) * TILE;

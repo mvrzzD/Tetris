@@ -47,7 +47,8 @@ public:
 
     void drawWelcome(sf::RenderWindow& window) const;
     void drawModeSelection(sf::RenderWindow& window) const;
-    void drawPause(sf::RenderWindow& window) const;
+    void drawPause(sf::RenderWindow& window, float volumeSons, float volumeMusique,
+                   bool muteSons, bool muteMusique) const;
     void drawGameOver(sf::RenderWindow& window, int score,
                       int niveau, bool modeEvolutif) const;
 
@@ -56,7 +57,9 @@ public:
                                   sf::RenderWindow& window,
                                   int& vitesse_out, bool& evolutif_out);
     GameState handlePause(const sf::Event& event,
-                          sf::RenderWindow& window);
+                          sf::RenderWindow& window,
+                          float& volumeSons, float& volumeMusique,
+                          bool& muteSons, bool& muteMusique);
     GameState handleGameOver(const sf::Event& event,
                              sf::RenderWindow& window);
 

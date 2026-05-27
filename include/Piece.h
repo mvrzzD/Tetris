@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
-// Structure représentant un bloc
+// Structure reprï¿½sentant un bloc
 struct Block {
     int x;
     int y;

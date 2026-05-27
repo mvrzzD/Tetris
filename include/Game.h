@@ -28,12 +28,27 @@ private:
     float     timerVerrouillage;
     bool      enVerrouillage;
 
-    // Générateur aléatoire moderne (meilleur que rand())
-    std::mt19937                    rng;
-    std::uniform_int_distribution<> dist;
+    // Gï¿½nÃ©rateur alÃ©atoire moderne (meilleur que rand())
+    std::mt19937           rng;
+    std::vector<int>       sacPieces;
+    std::size_t            indiceSac;
 
-    Piece genererPiece();
-    void  resetPartie();
+    bool leftHeld;
+    bool rightHeld;
+    bool downHeld;
+    float leftHoldTimer;
+    float rightHoldTimer;
+    float downHoldTimer;
+    float leftHoldDelay;
+    float rightHoldDelay;
+    float downHoldDelay;
+
+    Piece  genererPiece();
+    void   remplirSac();
+    void   resetPartie();
+    bool   deplacerPiece(int dx, int dy);
+    bool   rotationAvecKick();
+    void   handleInputHold(float deltaMs);
 
     void handleEvents();
     void update();

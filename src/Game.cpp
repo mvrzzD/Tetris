@@ -27,26 +27,59 @@ Game::Game(sf::RenderWindow& window)
       timerVerrouillage(0.f),
       enVerrouillage(false),
       rng(std::random_device{}()),
-      dist(0, 6)
+      sacPieces(),
+      indiceSac(0),
+      leftHeld(false),
+      rightHeld(false),
+      downHeld(false),
+      leftHoldTimer(0.f),
+      rightHoldTimer(0.f),
+      downHoldTimer(0.f),
+      leftHoldDelay(150.f),
+      rightHoldDelay(150.f),
+      downHoldDelay(50.f)
 {
+    remplirSac();
     pieceActuelle = genererPiece();
     pieceSuivante = genererPiece();
     audio.jouerMusiqueMenu();
     clock.restart();
 }
 
+void Game::remplirSac() {
+    sacPieces.clear();
+    sacPieces.reserve(7);
+    for (int i = 0; i < 7; i++)
+        sacPieces.push_back(i);
+    std::shuffle(sacPieces.begin(), sacPieces.end(), rng);
+    indiceSac = 0;
+}
+
 Piece Game::genererPiece() {
-    return Piece(dist(rng), 3, 0);
+    if (indiceSac >= sacPieces.size())
+        remplirSac();
+    int type = sacPieces[indiceSac++];
+    return Piece(type, 3, 0);
 }
 
 void Game::resetPartie() {
     board.reset();
+    remplirSac();
     pieceActuelle     = genererPiece();
     pieceSuivante     = genererPiece();
     tempsEcoule       = 0.f;
     timerVerrouillage = 0.f;
     enVerrouillage    = false;
     niveauPrecedent   = 1;
+    leftHeld          = false;
+    rightHeld         = false;
+    downHeld          = false;
+    leftHoldTimer     = 0.f;
+    rightHoldTimer    = 0.f;
+    downHoldTimer     = 0.f;
+    leftHoldDelay     = 150.f;
+    rightHoldDelay    = 150.f;
+    downHoldDelay     = 50.f;
     clock.restart();
 }
 
@@ -82,7 +115,15 @@ void Game::handleEvents() {
             etat = suivant;
         }
         else if (etat == PAUSE) {
-            GameState suivant = menu.handlePause(event, window);
+            float volumeSons = audio.getVolumeSons();
+            float volumeMusique = audio.getVolumeMusique();
+            bool muteSons = audio.isSonsMuted();
+            bool muteMusique = audio.isMusiqueMuted();
+            GameState suivant = menu.handlePause(event, window, volumeSons, volumeMusique, muteSons, muteMusique);
+            audio.setMuteSons(muteSons);
+            audio.setMuteMusique(muteMusique);
+            audio.setVolumeSons(volumeSons);
+            audio.setVolumeMusique(volumeMusique);
             if (suivant == PLAYING) {
                 audio.jouerMenuValid();
                 audio.resumeMusique();
@@ -124,45 +165,37 @@ void Game::handleEvents() {
             if (event.type == sf::Event::KeyPressed) {
                 switch (event.key.code) {
                     case sf::Keyboard::Left:
-                        pieceActuelle.move(-1, 0);
-                        if (!board.isValid(pieceActuelle)) pieceActuelle.move(1, 0);
-                        else {
+                        if (leftHeld) break;
+                        leftHeld = true;
+                        leftHoldTimer = 0.f;
+                        leftHoldDelay = 150.f;
+                        if (deplacerPiece(-1, 0)) {
                             audio.jouerDeplacement();
                             if (enVerrouillage) timerVerrouillage = 0.f;
                         }
                         break;
                     case sf::Keyboard::Right:
-                        pieceActuelle.move(1, 0);
-                        if (!board.isValid(pieceActuelle)) pieceActuelle.move(-1, 0);
-                        else {
+                        if (rightHeld) break;
+                        rightHeld = true;
+                        rightHoldTimer = 0.f;
+                        rightHoldDelay = 150.f;
+                        if (deplacerPiece(1, 0)) {
                             audio.jouerDeplacement();
                             if (enVerrouillage) timerVerrouillage = 0.f;
                         }
                         break;
                     case sf::Keyboard::Down:
-                        pieceActuelle.move(0, 1);
-                        if (!board.isValid(pieceActuelle)) pieceActuelle.move(0, -1);
-                        else {
+                        if (downHeld) break;
+                        downHeld = true;
+                        downHoldTimer = 0.f;
+                        downHoldDelay = 50.f;
+                        if (deplacerPiece(0, 1)) {
                             audio.jouerDeplacement();
                             tempsEcoule = 0.f;
                         }
                         break;
                     case sf::Keyboard::Up: {
-                        auto sauvBlocs = pieceActuelle.getRelativeBlocs();
-                        pieceActuelle.rotate();
-
-                        bool valide = false;
-                        int decalages[] = {0, 1, -1, 2, -2};
-                        for (int dx : decalages) {
-                            pieceActuelle.move(dx, 0);
-                            if (board.isValid(pieceActuelle)) {
-                                valide = true;
-                                break;
-                            }
-                            pieceActuelle.move(-dx, 0);
-                        }
-                        if (!valide) pieceActuelle.setBlocs(sauvBlocs);
-                        else {
+                        if (rotationAvecKick()) {
                             audio.jouerRotation();
                             if (enVerrouillage) timerVerrouillage = 0.f;
                         }
@@ -194,6 +227,14 @@ void Game::handleEvents() {
                     default: break;
                 }
             }
+            else if (event.type == sf::Event::KeyReleased) {
+                if (event.key.code == sf::Keyboard::Left)
+                    leftHeld = false;
+                else if (event.key.code == sf::Keyboard::Right)
+                    rightHeld = false;
+                else if (event.key.code == sf::Keyboard::Down)
+                    downHeld = false;
+            }
         }
     }
 }
@@ -217,13 +258,13 @@ void Game::update() {
         ? std::max(100, TRES_LENT - (board.getNiveau() - 1) * 60)
         : vitesse;
 
+    handleInputHold(deltaMs);
+
     tempsEcoule += deltaMs;
 
     if (tempsEcoule >= static_cast<float>(delai)) {
         tempsEcoule = 0.f;
-        pieceActuelle.move(0, 1);
-        if (!board.isValid(pieceActuelle)) {
-            pieceActuelle.move(0, -1);
+        if (!deplacerPiece(0, 1)) {
             enVerrouillage = true;
         } else {
             enVerrouillage    = false;
@@ -251,6 +292,68 @@ void Game::update() {
     }
 }
 
+bool Game::deplacerPiece(int dx, int dy) {
+    pieceActuelle.move(dx, dy);
+    if (!board.isValid(pieceActuelle)) {
+        pieceActuelle.move(-dx, -dy);
+        return false;
+    }
+    return true;
+}
+
+bool Game::rotationAvecKick() {
+    auto sauvBlocs = pieceActuelle.getRelativeBlocs();
+    pieceActuelle.rotate();
+
+    constexpr int decalages[] = {0, 1, -1, 2, -2};
+    for (int dx : decalages) {
+        pieceActuelle.move(dx, 0);
+        if (board.isValid(pieceActuelle))
+            return true;
+        pieceActuelle.move(-dx, 0);
+    }
+
+    pieceActuelle.setBlocs(sauvBlocs);
+    return false;
+}
+
+void Game::handleInputHold(float deltaMs) {
+    if (leftHeld) {
+        leftHoldTimer += deltaMs;
+        if (leftHoldTimer >= leftHoldDelay) {
+            leftHoldTimer -= leftHoldDelay;
+            leftHoldDelay = 60.f;
+            if (deplacerPiece(-1, 0)) {
+                audio.jouerDeplacement();
+                if (enVerrouillage) timerVerrouillage = 0.f;
+            }
+        }
+    }
+
+    if (rightHeld) {
+        rightHoldTimer += deltaMs;
+        if (rightHoldTimer >= rightHoldDelay) {
+            rightHoldTimer -= rightHoldDelay;
+            rightHoldDelay = 60.f;
+            if (deplacerPiece(1, 0)) {
+                audio.jouerDeplacement();
+                if (enVerrouillage) timerVerrouillage = 0.f;
+            }
+        }
+    }
+
+    if (downHeld) {
+        downHoldTimer += deltaMs;
+        if (downHoldTimer >= downHoldDelay) {
+            downHoldTimer -= downHoldDelay;
+            if (deplacerPiece(0, 1)) {
+                audio.jouerDeplacement();
+                tempsEcoule = 0.f;
+            }
+        }
+    }
+}
+
 void Game::render() {
     window.clear(sf::Color(245, 245, 245));
 
@@ -261,7 +364,11 @@ void Game::render() {
     else {
         renderJeu();
         if (etat == PAUSE)
-            menu.drawPause(window);
+            menu.drawPause(window,
+                           audio.getVolumeSons(),
+                           audio.getVolumeMusique(),
+                           audio.isSonsMuted(),
+                           audio.isMusiqueMuted());
         if (etat == GAME_OVER)
             menu.drawGameOver(window,
                               board.getScore(),

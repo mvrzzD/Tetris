@@ -7,11 +7,15 @@ class Audio {
 private:
     sf::Music musique;
     std::map<std::string, sf::SoundBuffer> buffers;
-    std::map<std::string, sf::Sound*>      sons;
+    std::map<std::string, sf::Sound>       sons;
 
     bool  musiqueActive;
     float pitchActuel;
     bool  sonActif;
+    bool  muteSons;
+    bool  muteMusique;
+    float volumeSons;
+    float volumeMusique;
 
     void chargerSon(const std::string& nom, const std::string& fichier);
 
@@ -39,4 +43,11 @@ public:
 
     void setVolumeSons(float volume);
     void setVolumeMusique(float volume);
+    void setMuteSons(bool mute);
+    void setMuteMusique(bool mute);
+
+    float getVolumeSons() const;
+    float getVolumeMusique() const;
+    bool  isSonsMuted() const;
+    bool  isMusiqueMuted() const;
 };

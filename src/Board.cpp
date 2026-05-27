@@ -88,16 +88,21 @@ int Board::supprimerLignes() {
         lignesAAnimer = aSupprimer;
         timerAnimation = 200.f; // 200ms de flash
 
-        for (int r : aSupprimer) {
-            for (int row = r; row > 0; row--)
-                for (int c = 0; c < COLS; c++)
-                    grille[row][c] = grille[row - 1][c];
-            for (int c = 0; c < COLS; c++)
-                grille[0][c] = sf::Color::Transparent;
+        int dest = ROWS - 1;
+        for (int r = ROWS - 1; r >= 0; r--) {
+            if (std::find(aSupprimer.begin(), aSupprimer.end(), r) != aSupprimer.end())
+                continue;
 
-            // On ajuste les indices car tout a bougé
-            for (int& otherR : aSupprimer) if (otherR < r) otherR++;
+            if (dest != r) {
+                for (int c = 0; c < COLS; c++)
+                    grille[dest][c] = grille[r][c];
+            }
+            dest--;
         }
+
+        for (int r = dest; r >= 0; r--)
+            for (int c = 0; c < COLS; c++)
+                grille[r][c] = sf::Color::Transparent;
 
         static const int points[] = { 0, 100, 300, 500, 800 };
         if (compteur >= 1 && compteur <= 4)

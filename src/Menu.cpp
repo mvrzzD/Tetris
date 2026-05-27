@@ -1,13 +1,15 @@
 #include "Menu.h"
+#include "AssetManager.h"
 #include "Board.h"
 #include <SFML/Window/Keyboard.hpp>
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <ctime>
 
 Menu::Menu() : indexSelection(0), indexSelectionPause(0) {
-    fontChargee      = font.loadFromFile("assets/fonts/PressStart2P-Regular.ttf");
-    fontArialChargee = fontArial.loadFromFile("assets/fonts/arial.ttf");
+    fontChargee      = AssetManager::loadFont(font, "assets/fonts/PressStart2P-Regular.ttf");
+    fontArialChargee = AssetManager::loadFont(fontArial, "assets/fonts/arial.ttf");
 
     nomsModes = { "Tres lent", "Rapide", "Tres rapide", "Instantane", "Evolutif" };
     vitessesModes = { TRES_LENT, RAPIDE, TRES_RAPIDE, INSTANTANE, EVOLUTIF };
@@ -108,7 +110,8 @@ void Menu::drawModeSelection(sf::RenderWindow& window) const {
     }
 }
 
-void Menu::drawPause(sf::RenderWindow& window) const {
+void Menu::drawPause(sf::RenderWindow& window, float volumeSons, float volumeMusique,
+                      bool muteSons, bool muteMusique) const {
     float larg = static_cast<float>(window.getSize().x);
     float haut = static_cast<float>(window.getSize().y);
 
@@ -116,28 +119,41 @@ void Menu::drawPause(sf::RenderWindow& window) const {
     overlay.setFillColor(sf::Color(0, 0, 0, 80));
     window.draw(overlay);
 
-    sf::RectangleShape cadre(sf::Vector2f(400, 320));
-    cadre.setPosition(sf::Vector2f(larg / 2 - 200, haut / 2 - 160));
+    sf::RectangleShape cadre(sf::Vector2f(460, 420));
+    cadre.setPosition(sf::Vector2f(larg / 2 - 230, haut / 2 - 210));
     cadre.setFillColor(sf::Color(255, 255, 255));
     cadre.setOutlineColor(sf::Color(200, 200, 200));
     cadre.setOutlineThickness(2);
     window.draw(cadre);
 
-    drawTexte(window, "PAUSE", larg / 2 - 90, haut / 2 - 140, 40, sf::Color(32, 156, 115));
+    drawTexte(window, "PAUSE", larg / 2 - 90, haut / 2 - 190, 40, sf::Color(32, 156, 115));
 
-    std::vector<std::string> options = { "REPRENDRE", "RECOMMENCER", "MENU PRINCIPAL", "QUITTER" };
+    std::string sonsTexte = muteSons ? "SONS : OFF" : "SONS : " + std::to_string(static_cast<int>(volumeSons)) + "%";
+    std::string musiqueTexte = muteMusique ? "MUSIQUE : OFF" : "MUSIQUE : " + std::to_string(static_cast<int>(volumeMusique)) + "%";
+
+    std::vector<std::string> options = {
+        "REPRENDRE",
+        "RECOMMENCER",
+        "MENU PRINCIPAL",
+        sonsTexte,
+        musiqueTexte,
+        "QUITTER"
+    };
+
     for (int i = 0; i < (int)options.size(); i++) {
         bool sel = (i == indexSelectionPause);
-        float y = haut / 2 - 50 + i * 50;
+        float y = haut / 2 - 110 + i * 55;
         if (sel) {
-            sf::RectangleShape fond(sf::Vector2f(360, 40));
-            fond.setPosition(sf::Vector2f(larg / 2 - 180, y - 5));
+            sf::RectangleShape fond(sf::Vector2f(420, 45));
+            fond.setPosition(sf::Vector2f(larg / 2 - 210, y - 5));
             fond.setFillColor(sf::Color(230, 230, 230));
             window.draw(fond);
         }
         sf::Color c = sel ? sf::Color(32, 156, 115) : sf::Color(80, 80, 80);
-        drawTexte(window, (sel ? "> " : "  ") + options[i], larg / 2 - 170, y, 22, c);
+        drawTexte(window, (sel ? "> " : "  ") + options[i], larg / 2 - 200, y, 22, c);
     }
+
+    drawTexte(window, "Use Gauche/Droite pour regler, ENTREE pour couper", larg / 2 - 210, haut / 2 + 190, 16, sf::Color(120, 120, 120), true);
 }
 
 void Menu::drawGameOver(sf::RenderWindow& window, int score, int niveau, bool modeEvolutif) const {
@@ -148,19 +164,32 @@ void Menu::drawGameOver(sf::RenderWindow& window, int score, int niveau, bool mo
     overlay.setFillColor(sf::Color(0, 0, 0, 100));
     window.draw(overlay);
 
-    sf::RectangleShape cadre(sf::Vector2f(400, 320));
-    cadre.setPosition(sf::Vector2f(larg / 2 - 200, haut / 2 - 160));
+    sf::RectangleShape cadre(sf::Vector2f(400, 360));
+    cadre.setPosition(sf::Vector2f(larg / 2 - 200, haut / 2 - 180));
     cadre.setFillColor(sf::Color(255, 255, 255));
     cadre.setOutlineColor(sf::Color(200, 200, 200));
     cadre.setOutlineThickness(2);
     window.draw(cadre);
 
-    drawTexte(window, "GAME OVER", larg / 2 - 140, haut / 2 - 140, 40, sf::Color(200, 0, 0));
+    auto drawCenteredText = [&](const std::string& texte, float y, int taille, sf::Color couleur) {
+        if (!fontChargee) return;
+        sf::Text t(texte, font, static_cast<unsigned int>(taille));
+        float width = t.getLocalBounds().width;
+        t.setPosition(sf::Vector2f(larg / 2 - width / 2.f, y));
+        t.setFillColor(couleur);
+        window.draw(t);
+    };
+
+    float baseY = haut / 2 - 140;
+    drawCenteredText("GAME OVER", baseY, 40, sf::Color(200, 0, 0));
+    drawCenteredText("SCORE : " + std::to_string(score), baseY + 70, 22, sf::Color(80, 80, 80));
+    drawCenteredText("NIVEAU : " + std::to_string(niveau), baseY + 100, 22, sf::Color(80, 80, 80));
+    drawCenteredText(std::string("MODE : ") + (modeEvolutif ? "Evolutif" : "Normal"), baseY + 130, 22, sf::Color(80, 80, 80));
 
     std::vector<std::string> options = { "RECOMMENCER", "MENU PRINCIPAL", "QUITTER" };
-    for (int i = 0; i < (int)options.size(); i++) {
+    for (int i = 0; i < static_cast<int>(options.size()); i++) {
         bool sel = (i == indexSelectionPause);
-        float y = haut / 2 - 50 + i * 50;
+        float y = baseY + 180 + i * 55;
         if (sel) {
             sf::RectangleShape fond(sf::Vector2f(360, 40));
             fond.setPosition(sf::Vector2f(larg / 2 - 180, y - 5));
@@ -198,17 +227,52 @@ GameState Menu::handleModeSelection(const sf::Event& event, sf::RenderWindow& wi
     return MODE_SELECTION;
 }
 
-GameState Menu::handlePause(const sf::Event& event, sf::RenderWindow& window) {
+GameState Menu::handlePause(const sf::Event& event, sf::RenderWindow& window,
+                               float& volumeSons, float& volumeMusique,
+                               bool& muteSons, bool& muteMusique) {
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::Up)
-            indexSelectionPause = (indexSelectionPause - 1 + 4) % 4;
+            indexSelectionPause = (indexSelectionPause - 1 + 6) % 6;
         if (event.key.code == sf::Keyboard::Down)
-            indexSelectionPause = (indexSelectionPause + 1) % 4;
+            indexSelectionPause = (indexSelectionPause + 1) % 6;
+
+        if (event.key.code == sf::Keyboard::Left || event.key.code == sf::Keyboard::Right) {
+            float delta = (event.key.code == sf::Keyboard::Right) ? 5.f : -5.f;
+            if (indexSelectionPause == 3) {
+                volumeSons = std::clamp(volumeSons + delta, 0.f, 100.f);
+                if (volumeSons > 0.f)
+                    muteSons = false;
+                else
+                    muteSons = true;
+            }
+            if (indexSelectionPause == 4) {
+                volumeMusique = std::clamp(volumeMusique + delta, 0.f, 100.f);
+                if (volumeMusique > 0.f)
+                    muteMusique = false;
+                else
+                    muteMusique = true;
+            }
+        }
+
         if (event.key.code == sf::Keyboard::Enter) {
             if (indexSelectionPause == 0) return PLAYING;
             if (indexSelectionPause == 1) return RESTART;
             if (indexSelectionPause == 2) return MODE_SELECTION;
-            if (indexSelectionPause == 3) window.close();
+            if (indexSelectionPause == 3) {
+                muteSons = !muteSons;
+                if (muteSons)
+                    volumeSons = 0.f;
+                else if (volumeSons <= 0.f)
+                    volumeSons = 70.f;
+            }
+            if (indexSelectionPause == 4) {
+                muteMusique = !muteMusique;
+                if (muteMusique)
+                    volumeMusique = 0.f;
+                else if (volumeMusique <= 0.f)
+                    volumeMusique = 50.f;
+            }
+            if (indexSelectionPause == 5) window.close();
         }
         if (event.key.code == sf::Keyboard::Escape)
             return PLAYING;
